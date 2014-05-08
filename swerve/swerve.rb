@@ -10,6 +10,34 @@ class Hash
   end
 end
 
+class Site
+
+  def initialize(config)
+    @config = config
+  end
+
+  def named?(name)
+    # Matches either the stated name or the git repo name
+    @config[:name] == name || @config.get_deep(:git, :origin).match(/\/#{name}\.git$/)
+  end
+
+  def name
+    @config[:name]
+  end
+
+  def repo_name
+    match_data = @config.get_deep(:git, :origin).match(/\/(.*)\.git$/)
+    raise IllegalState if match_data.nil?
+    match_data[1]
+  end
+
+  def installed?
+    File.exist?(File.expand_path("../repos/#{repo_name}")) &&
+    File.exist?(File.expand_path("../repos/#{repo_name}/current"))
+  end
+
+end
+
 class Swerve < Thor
 
   include CommandLineReporter
@@ -41,6 +69,8 @@ class Swerve < Thor
     ]
   }
 
+  @@sites = CONFIG[:sites].collect{|site_config| Site.new(site_config)}
+
   desc "refresh", "Makes sure all sites are installed and have up-to-date code"
   def refresh
     puts Rainbow("TBD").red
@@ -49,18 +79,18 @@ class Swerve < Thor
   desc "status", "Lists the status of the sites"
   def status
     debugger
-    get_site_config("ost")
+    get_site("ost")
     table :border => false do
       row :header => true, :color => 'blue'  do
-        column 'Site', :width => 20, :align => 'left', padding: 2
+        column 'Site', :width => 20, :align => 'left'
         column 'Fork', width: 20, align: 'left'
         column 'Branch', width: 20, align: 'left'
         column 'Up?', :width => 10
       end
 
-      CONFIG[:sites].each do |site|
-        row color: 'black' do
-          column site[:name], padding: 2
+      @@sites.each do |site|
+        row color: (site.installed? ? 'black' : 'white_on_black') do
+          column site.name
           column '---'
           column '---'
           column '---'
@@ -76,14 +106,9 @@ protected
 
   end
 
-  def get_site_config(site_name)
-    # gets site by either its name or its git repo name
-    CONFIG[:sites].select{|site| site[:name] == site_name}[0] ||
-    CONFIG[:sites].select{|site| String(site.get_deep(:git, :origin)).match(/\/#{site_name}\.git$/)}[0]
+  def get_site(site_name)
+    @@sites.select{|site| site.named?(site_name)}[0]
   end
-
-
-
 
 end
 
