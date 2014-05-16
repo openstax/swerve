@@ -4,5 +4,6 @@ gem 'thor'
 gem 'rainbow'
 gem 'command_line_reporter'
 gem 'debugger'
+gem 'git'
 
 # gem 'file-tail'

@@ -1,0 +1,1 @@
+node.normal["emacs"]["packages"] = ["emacs23-nox"]

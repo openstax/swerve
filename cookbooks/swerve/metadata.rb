@@ -9,3 +9,7 @@ recipe "swerve", "Installs and configures swerve"
 %w{ centos redhat fedora ubuntu debian amazon oracle}.each do |os|
   supports os
 end
+
+%w{ emacs }.each do |cb|
+  depends cb
+end
