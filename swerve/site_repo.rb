@@ -12,12 +12,13 @@ class SiteRepo
   end
 
   def install!
+    Swerve.log_part("Cloning #{@github_path}...")
     begin
       g = Git.clone(git_ssh_url, @github_path, path: @clone_parent_dir)
-      puts "Cloned SSH version of #{@github_path}"
+      Swerve.log(" via SSH")
     rescue Git::GitExecuteError => e
       g = Git.clone(git_https_url, @github_path, path: @clone_parent_dir)
-      puts "Cloned SSH version of #{@github_path}"
+      Swerve.log(" via HTTPS")
     end
   end
 

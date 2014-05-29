@@ -3,11 +3,11 @@ class Site
   def initialize(config)
     @config = config
 
-    # @origin_repo = SiteRepo.new(repo_path, origin_github_path, 'origin')
-
     @repos = { origin_github_path => SiteRepo.new(repo_path, origin_github_path) }
 
-    # @repos = [@origin_repo]
+    @config.get_deep(:git, :forks).each do |fork_github_path|
+      @repos[fork_github_path] = SiteRepo.new(repo_path, fork_github_path)      
+    end
   end
 
   def named?(name)
@@ -28,10 +28,10 @@ class Site
   end
 
   def refresh
+    Swerve.log("Refreshing #{name}")
+
     FileUtils.mkdir_p(repo_path)
-
     @repos.values.each { |repo| repo.refresh }
-
     set_current_repo(origin_github_path) if !current_repo_set?
   end
 

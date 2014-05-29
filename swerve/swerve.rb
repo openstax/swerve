@@ -29,8 +29,9 @@ class Swerve < Thor
         git: {
           origin: "lml/ost",
           forks: [
-            "klb/ost",
-            "kjd/ost"
+            "Dantemss/ost",
+            "lakshmivyas/ost",
+            "kjdav/ost"
           ]
         },
         port: 3000,
@@ -46,6 +47,25 @@ class Swerve < Thor
           ]
         },
         port: 3002
+      },
+      {
+        name: "Accounts",
+        git: {
+          origin: "openstax/accounts",
+          forks: [
+            "Dantemss/accounts",
+            "jpslav/accounts"
+          ]
+        },
+        port: 2999
+      },
+      {
+      name: "Exchange",
+        git: {
+          origin: "openstax/exchange",
+          forks: []
+        },
+        port: 3003
       }
 
     ]
@@ -55,29 +75,34 @@ class Swerve < Thor
 
   desc "refresh", "Makes sure all sites are installed and have up-to-date code"
   def refresh
-    puts Rainbow("TBD").red
-    get_site("ost").refresh
+    @@sites.each{ |site| site.refresh }
   end
+
+  # desc "test", "blah"
+  # def test
+  #   puts "enter a char: "
+  #   str = STDIN.getc
+  #   puts str
+  # end
 
   desc "status", "Lists the status of the sites"
   def status
-    # debugger
-    # get_site("ost").refresh
+
     table :border => false do
       row :header => true, :color => 'blue'  do
         column 'Site', :width => 20, :align => 'left'
         column 'Repo', width: 20, align: 'left'
         column 'Branch', width: 20, align: 'left'
-        column 'Up?', :width => 10
+        column 'Port', :width => 10
       end
 
       @@sites.each do |site|
         repo = site.current_repo
-        row color: (site.installed? ? 'black' : 'white_on_black') do
+        row color: (site.installed? ? 'green' : 'red') do
           column site.name
           column repo ? repo.github_path : '---'
           column repo ? repo.current_branch.to_s : '---'
-          column site.up? ? 'Yes' : 'No'
+          column site.up? ? site.port : '(offline)'
         end
       end
 
@@ -86,12 +111,17 @@ class Swerve < Thor
 
 protected
 
-  def installed?(site_name)
-
-  end
-
   def get_site(site_name)
     @@sites.select{|site| site.named?(site_name)}[0]
+  end
+
+  def self.log(message)
+    puts message
+  end
+
+  def self.log_part(message)
+    $stdout.sync = true
+    print message
   end
 
 end

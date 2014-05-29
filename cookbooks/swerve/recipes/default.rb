@@ -34,6 +34,10 @@ remote_file "/usr/bin/prompt.pl" do
   mode 0755
 end
 
+# template "/home/vagrant/.bash_profile" do
+#   source "bash_profile.erb"
+# end
+
 template "/home/vagrant/.bashrc" do
   source "bashrc.erb"
 end
