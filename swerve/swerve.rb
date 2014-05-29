@@ -4,62 +4,12 @@ require 'command_line_reporter'
 require 'debugger'
 require 'fileutils'
 require 'git'
+require './utilities'
+require './network'
+require './site'
+require './site_repo'
 
-class Hash
-  def get_deep(*fields)
-    fields.inject(self) {|acc,e| acc[e] if acc}
-  end
-end
 
-class Site
-
-  def initialize(config)
-    @config = config
-  end
-
-  def named?(name)
-    # Matches either the stated name or the git repo name
-    @config[:name] == name || repo_name == name
-  end
-
-  def name
-    @config[:name]
-  end
-
-  def repo_name
-    @config.get_deep(:git, :origin).split('/')[1]
-  end
-
-  def installed?
-    File.exist?(repo_path) && File.exist?("#{repo_path}/current")
-  end
-
-  def refresh
-    debugger
-    FileUtils.mkdir_p(repo_path)
-    FileUtils.mkdir_p(repo_path + "/forks")
-
-    # only clone if not there.
-    begin
-      g = Git.clone(git_ssh_url(@config.get_deep(:git, :origin)), 'origin', path: repo_path)
-    rescue Git::GitExecuteError => e
-      g = Git.clone(git_https_url(@config.get_deep(:git, :origin)), 'origin', path: repo_path)
-    end
-  end
-
-  def repo_path
-    File.expand_path("../repos/#{repo_name}")
-  end
-
-  def git_ssh_url(repo)
-    "git@github.com:#{repo}.git"
-  end
-
-  def git_https_url(repo)
-    "https://github.com/#{repo}"
-  end
-
-end
 
 class Swerve < Thor
 
@@ -75,7 +25,7 @@ class Swerve < Thor
   CONFIG = {
     sites: [
       {
-        name: "OpenStax Tutor",
+        name: "Tutor (Legacy)",
         git: {
           origin: "lml/ost",
           forks: [
@@ -83,6 +33,7 @@ class Swerve < Thor
             "kjd/ost"
           ]
         },
+        port: 3000,
         commands: []
       },
       {
@@ -93,7 +44,8 @@ class Swerve < Thor
             "Dantemss/exercises",
             "jpslav/exercises"
           ]
-        }
+        },
+        port: 3002
       }
 
     ]
@@ -104,26 +56,28 @@ class Swerve < Thor
   desc "refresh", "Makes sure all sites are installed and have up-to-date code"
   def refresh
     puts Rainbow("TBD").red
+    get_site("ost").refresh
   end
 
   desc "status", "Lists the status of the sites"
   def status
-    debugger
-    get_site("ost").refresh
+    # debugger
+    # get_site("ost").refresh
     table :border => false do
       row :header => true, :color => 'blue'  do
         column 'Site', :width => 20, :align => 'left'
-        column 'Fork', width: 20, align: 'left'
+        column 'Repo', width: 20, align: 'left'
         column 'Branch', width: 20, align: 'left'
         column 'Up?', :width => 10
       end
 
       @@sites.each do |site|
+        repo = site.current_repo
         row color: (site.installed? ? 'black' : 'white_on_black') do
           column site.name
-          column '---'
-          column '---'
-          column '---'
+          column repo ? repo.github_path : '---'
+          column repo ? repo.current_branch.to_s : '---'
+          column site.up? ? 'Yes' : 'No'
         end
       end
 
