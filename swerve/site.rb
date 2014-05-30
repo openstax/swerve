@@ -8,6 +8,87 @@ class Site
     @config.get_deep(:git, :forks).each do |fork_github_path|
       @repos[fork_github_path] = SiteRepo.new(repo_path, fork_github_path)      
     end
+  end  
+
+  #############################################################################
+  # Swerve-level Site Actions
+  #############################################################################
+
+  def init
+    exec_commands_in_active_repo(
+      @config.get_deep(:commands, :init),
+      pre_message: "Initializing #{name}'s active repository (#{active_repo.github_path})...",
+      post_message: "#{name} initialization complete."
+    )
+  end
+
+  def download
+    FileUtils.mkdir_p(repo_path)
+    run_on_repos(:download, false)
+    set_active_repo(origin_repo) if !active_repo_set?  
+  end
+
+  def update(active_only = false)
+    exec_commands_in_active_repo(
+      @config.get_deep(:commands, :update),
+      pre_message: "Updating #{name}'s active repository (#{active_repo.github_path})...",
+      post_message: "#{name} update is complete."
+    )
+  end
+
+  def start
+    exec_commands_in_active_repo(
+      @config.get_deep(:commands, :start),
+      pre_message: "Starting #{name}'s active repository server (#{active_repo.github_path})...",
+      post_message: "#{name} startup is complete; check 'swerve status' for more info."
+    )
+  end
+
+  def stop
+    # http://stackoverflow.com/a/9346231/1664216
+    Swerve.log("Can't stop #{name} because it isn't up.") and return if !up?
+    status = `kill $(lsof -t -i:#{port})`
+    Swerve.log("#{name} was #{status.exited? ? '' : 'NOT'} stopped successfully.")
+  end
+
+  def restart
+    stop if up?
+    start
+  end
+
+  #############################################################################
+  # Helpers
+  #############################################################################
+
+  def exec_commands_in_active_repo(commands, options={})
+    commands = [commands].compact if !commands.is_a?(Array)
+
+    Swerve.log(options[:pre_message])
+
+    if commands.empty?
+      Swerve.log("Nothing to do.")
+    else
+      commands.each do |command|
+        exec_command_in_active_repo(command, options.except(:pre_message, :post_message))
+      end
+    end
+
+    Swerve.log(options[:post_message])
+  end
+
+  def exec_command_in_active_repo(command, options={})
+    options[:errors_are_fatal] ||= false
+    options[:verbose] ||= false
+
+    Runner.run(active_link_path, command, options)
+  end
+
+  def run_on_repos(command, active_only)
+    if active_only
+      active_repo.send(command)
+    else
+      @repos.values.each {|repo| repo.send(command)}
+    end
   end
 
   def named?(name)
@@ -29,53 +110,6 @@ class Site
 
   def downloaded?
     File.exist?(repo_path) && File.exist?(active_link_path)
-  end
-
-  # def refresh
-  #   Swerve.log("Refreshing #{name}")
-
-  #   FileUtils.mkdir_p(repo_path)
-  #   @repos.values.each { |repo| repo.refresh }
-  #   set_active_repo(origin_github_path) if !active_repo_set?
-  # end
-
-  def reset(active_only = false)
-    # should only do for the active repo
-    puts Rainbow("TBD").red
-  end
-
-  # def install(active_only = false)
-  #   FileUtils.mkdir_p(repo_path)
-
-  #   if active_repo.nil?
-  #     origin_repo.install!
-  #     set_active_repo(origin_repo)
-  #   end
-
-  #   if active_only
-  #     active_repo.install!
-  #   else
-  #     @repos.each {|repo| repo.install!}
-  #   end
-  # end
-
-  def download(active_only = false)
-    FileUtils.mkdir_p(repo_path)
-
-    if active_repo.nil?
-      origin_repo.download
-      set_active_repo(origin_repo)
-    end
-
-    if active_only
-      active_repo.download
-    else
-      @repos.values.each {|repo| repo.download}
-    end
-  end
-
-  def update(active_only = false)
-    puts Rainbow("TBD").red
   end
 
   def repo_path

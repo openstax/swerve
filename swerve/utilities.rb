@@ -3,6 +3,16 @@ class Hash
   def get_deep(*fields)
     fields.inject(self) {|acc,e| acc[e] if acc}
   end
+
+  def except!(*keys)
+    keys.each { |key| delete(key) }
+    self
+  end
+
+  def except(*keys)
+    dup.except!(*keys)
+  end
+  
 end
 
 class String

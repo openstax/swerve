@@ -6,6 +6,7 @@ require 'fileutils'
 require 'git'
 require './utilities'
 require './network'
+require './runner'
 require './site'
 require './site_repo'
 
@@ -26,6 +27,10 @@ class Swerve < Thor
     E.g. to #{command} the Accounts and Exchange sites, you could type
 
     $> swerve #{command} acc exch
+
+    As a shortcut, you can also pass 'all' to #{command} all of the sites, e.g.
+
+    $> swerve #{command} all
     DESC
   end
 
@@ -43,7 +48,21 @@ class Swerve < Thor
           ]
         },
         port: 3000,
-        commands: []
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server"
+          ]
+        }
       },
       {
         name: "Exercises",
@@ -122,21 +141,21 @@ class Swerve < Thor
     sites.each {|site| site.download }
   end
 
-  desc "reset [<SITELABEL>...]", "Runs site-specific reset actions for the specified sites' active repositories."
+  desc "init [<SITELABEL>...]", "Runs site-specific initialization actions for the specified sites' active repositories."
   long_desc <<-LONGDESC
-    Runs site-specific reset actions for the specified sites' active repositories.  These actions
+    Runs site-specific initialization actions for the specified sites' active repositories.  These actions
     normally include things like #{Rainbow('deleting').red} and re-initialize the active database.
 
-    #{site_labels_help('reset')}
+    #{site_labels_help('init')}
 
   LONGDESC
-  def reset(*site_labels)
+  def init(*site_labels)
     sites = select_sites(site_labels, "Which site(s) do you want to reset?")
 
-    if yes?("Are you sure you want to reset the active repositories for these sites?: #{sites.collect{|site| site.name}.join(', ')}")
-      sites.each {|site| site.reset(true) }
+    if yes?("Are you sure you want to init the active repositories for these sites?: #{sites.collect{|site| site.name}.join(', ')}")
+      sites.each {|site| site.init }
     else
-      say "Reset canceled."
+      say "Init canceled."
     end
   end
 
@@ -144,6 +163,43 @@ class Swerve < Thor
   def update(*site_labels)
     sites = select_sites(site_labels, "Which site(s) do you want to update?")
     sites.each {|site| site.update(true) }
+  end
+
+  desc "start [<SITELABEL>...]", "Starts the servers for the specified sites."
+  long_desc <<-LONGDESC
+    Starts the servers for the specified sites' active repositories.  Make sure
+    you have run "swerve init" for these servers before calling "start".
+
+    #{site_labels_help('reset')}
+
+  LONGDESC
+  def start(*site_labels)
+    sites = select_sites(site_labels, "Which site(s) do you want to start?")
+    sites.each {|site| site.start }
+  end
+
+  desc "stop [<SITELABEL>...]", "Stops the servers for the specified sites."
+  long_desc <<-LONGDESC
+    Stops the servers for the specified sites' active repositories.
+
+    #{site_labels_help('reset')}
+
+  LONGDESC
+  def stop(*site_labels)
+    sites = select_sites(site_labels, "Which site(s) do you want to stop?")
+    sites.each {|site| site.stop }
+  end
+
+  desc "restart [<SITELABEL>...]", "Restarts the servers for the specified sites."
+  long_desc <<-LONGDESC
+    Stops and starts the servers for the specified sites' active repositories.
+
+    #{site_labels_help('reset')}
+
+  LONGDESC
+  def restart(*site_labels)
+    sites = select_sites(site_labels, "Which site(s) do you want to restart?")
+    sites.each {|site| site.restart }
   end
 
 
@@ -200,12 +256,12 @@ protected
   end
 
   def self.log(message)
-    puts message
+    puts message if !message.nil?
   end
 
   def self.log_part(message)
     $stdout.sync = true
-    print message
+    print message if !message.nil?
   end
 
 end
