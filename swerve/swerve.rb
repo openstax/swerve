@@ -213,6 +213,18 @@ class Swerve < Thor
     sites.each {|site| site.restart }
   end
 
+  desc "repo [<SITELABEL>]", "Set the active repository for a site"
+  def repo(*site_labels)
+    sites = select_sites(site_labels, "For which site do you want to select the active repository?", select_one: true)
+
+    # TODO make select_sites into generic select_choice (that can be reused for selecting repos or branches)
+  end
+
+  desc "branch [SITELABEL]", "Set the active branch for a site's active repository"
+  def branch(site_label=nil)
+    puts Rainbow("TBD").red
+  end
+
 
 protected
 
@@ -223,6 +235,8 @@ protected
   def select_sites(site_labels, question, options={})
 
     options[:hide_choices] ||= false
+    options[:select_one] ||= false
+
     selected_sites = []
 
     if site_labels.empty?
@@ -242,15 +256,18 @@ protected
 
       selected_indices = ask(question).split(" ")
 
-      if selected_indices.all? {|si| si.is_i? }
-        selected_sites = selected_indices.collect{|si| choices[si.to_i][1]}.flatten
-      else
+      if selected_indices.length != 1 && options[:select_one]
+        say Rainbow("Please choose only one site! (or CTRL + C to exit)").red
+        options[:hide_choices] = true
+        selected_sites = select_sites(site_labels, question, options)
+      elsif selected_indices.any? {|si| !si.is_i?}
         say Rainbow("Please enter a number or numbers separated by spaces! (or CTRL + C to exit)").red
-        selected_sites = select_sites(label, question, hide_choices: true)
+        options[:hide_choices] = true
+        selected_sites = select_sites(site_labels, question, options)
+      else
+        selected_sites = selected_indices.collect{|si| choices[si.to_i][1]}.flatten
       end
     else
-      
-
       if site_labels.any?{|site_label| site_label =~ /all/i}
         selected_sites = @@sites 
       else

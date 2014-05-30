@@ -36,6 +36,11 @@ end
 Vagrant.configure("2") do |config|
   config.vm.box = "precise64"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+
+  config.vm.provider :virtualbox do |vb|
+    vb.customize ["modifyvm", :id, "--memory", "1024"]
+  end
+
   config.berkshelf.enabled = true
   config.ssh.forward_agent = true
 
@@ -67,10 +72,6 @@ Vagrant.configure("2") do |config|
     chef.add_recipe('rbenv::ruby_build')
     chef.add_recipe('swerve::default')
     chef.log_level = :debug
-  end
-
-  config.vm.cleanup :chef_solo do |chef|
-    puts "Howdy!!!!!!!"
   end
 
   
