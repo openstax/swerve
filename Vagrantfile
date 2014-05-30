@@ -69,5 +69,9 @@ Vagrant.configure("2") do |config|
     chef.log_level = :debug
   end
 
+  config.vm.cleanup :chef_solo do |chef|
+    puts "Howdy!!!!!!!"
+  end
+
   
 end

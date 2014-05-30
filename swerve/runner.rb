@@ -6,30 +6,41 @@ require 'pty'
 module Runner
 
   def self.run(cwd, cmd, options)
-    spinner_chars = [
-      "\b/",
-      "\b-",
-      "\b\\",
-      "\b|"
-    ]
+    options[:fork] ||= false
 
-    begin
-      Swerve.log_part("Running '#{cmd}'... ")
-      PTY.spawn( "cd #{cwd}; #{cmd}" ) do |stdin, stdout, pid|
-        begin
-          # Do stuff with the output here. Just printing to show it works
-          # stdin.each { |line| print line }
-          ii = -1
-          stdin.each { |line| print ' ' if ii == -1; ii = ii+1; print spinner_chars[ii % spinner_chars.length]}
-        rescue Errno::EIO
-          print "\b"
-          # puts "Errno:EIO error, but this probably just means " +
-          #       "that the process has finished giving output"
+    full_command = "cd #{cwd}; #{cmd}"
+
+    if options[:fork]
+      Swerve.log_part("Running '#{cmd}' in a separate process... ")
+      fork { `#{full_command}` }
+    else
+
+      spinner_chars = [
+        "\b/",
+        "\b-",
+        "\b\\",
+        "\b|"
+      ]
+
+      begin
+        Swerve.log_part("Running '#{cmd}'... ")
+        PTY.spawn( full_command ) do |stdin, stdout, pid|
+          begin
+            # Do stuff with the output here. Just printing to show it works
+            # stdin.each { |line| print line }
+            ii = -1
+            stdin.each { |line| print ' ' if ii == -1; ii = ii+1; print spinner_chars[ii % spinner_chars.length]}
+          rescue Errno::EIO
+            print "\b"
+            # puts "Errno:EIO error, but this probably just means " +
+            #       "that the process has finished giving output"
+          end
         end
+        Swerve.log("done!")
+      rescue PTY::ChildExited
+        raise StandardError, "an error occured when running #{cmd}" if options[:errors_are_fatal]
       end
-      Swerve.log("done!")
-    rescue PTY::ChildExited
-      raise StandardError, "an error occured when running #{cmd}" if options[:errors_are_fatal]
+
     end
   end
 

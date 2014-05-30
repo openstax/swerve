@@ -14,6 +14,12 @@ class Site
   # Swerve-level Site Actions
   #############################################################################
 
+  def delete
+    Swerve.log_part("Deleting #{name}'s repositories... ")
+    FileUtils.rm_rf(repo_path)
+    Swerve.log("done!")
+  end
+
   def init
     exec_commands_in_active_repo(
       @config.get_deep(:commands, :init),
@@ -40,15 +46,35 @@ class Site
     exec_commands_in_active_repo(
       @config.get_deep(:commands, :start),
       pre_message: "Starting #{name}'s active repository server (#{active_repo.github_path})...",
-      post_message: "#{name} startup is complete; check 'swerve status' for more info."
+      fork: true
     )
+
+    time_limit = 60
+    time = 0
+    sleep_duration = 1
+
+    while time < time_limit do
+      sleep(sleep_duration)
+      break if up?
+      time = time + sleep_duration
+    end
+
+    if up?
+      Swerve.log("#{name} startup is complete, its server is active on guest port #{port}, host port #{port*10}")
+    else
+      Swerve.log("#{name}'s server didn't startup within #{time_limit} seconds.  If it is slow, it might still come up.  Check 'swerve status'.")
+    end
   end
 
   def stop
     # http://stackoverflow.com/a/9346231/1664216
-    Swerve.log("Can't stop #{name} because it isn't up.") and return if !up?
-    status = `kill $(lsof -t -i:#{port})`
-    Swerve.log("#{name} was #{status.exited? ? '' : 'NOT'} stopped successfully.")
+    if !up?
+      Swerve.log("Can't stop #{name} because it isn't up.")
+      return
+    end
+
+    system "kill $(lsof -t -i:#{port})"
+    Swerve.log("#{name} was #{$?.success? ? '' : 'NOT'} stopped successfully.")
   end
 
   def restart

@@ -127,6 +127,17 @@ class Swerve < Thor
     end
   end
 
+  desc "delete", "Deletes installed sites"
+  def delete(*site_labels)
+    sites = select_sites(site_labels, "Which site(s) do you want to delete?")
+
+    if yes?("Are you sure you want to delete all repositories for these sites?: #{sites.collect{|site| site.name}.join(', ')}")
+      sites.each {|site| site.delete }
+    else
+      say "Delete canceled."
+    end
+  end
+
   desc "download [<SITELABEL>...]", "Makes sure the code is up-to-date for the specified sites"
   long_desc <<-LONGDESC
     Makes sure the code is up-to-date for all of the specified sites' repositories.  If 
