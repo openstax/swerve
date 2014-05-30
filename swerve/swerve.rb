@@ -109,6 +109,10 @@ class Swerve < Thor
     end
   end
 
+  # todo, maybe 'install', 'setup', 'update' methods?
+  # install gets the latest versions of repos (clones/pulls)
+  # update runs bundle install, rake db:migrate (or whatever the commands are in the config)
+
 protected
 
   def get_site(site_name)

@@ -10,6 +10,6 @@ recipe "swerve", "Installs and configures swerve"
   supports os
 end
 
-%w{ emacs }.each do |cb|
+%w{ emacs ssh_known_hosts }.each do |cb|
   depends cb
 end

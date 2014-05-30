@@ -7,6 +7,7 @@ rbenv_gem "bundler" do
 end
 
 include_recipe "emacs"
+include_recipe "ssh_known_hosts"
 
 required_packages = [
   "sqlite3", 
@@ -41,3 +42,9 @@ end
 template "/home/vagrant/.bashrc" do
   source "bashrc.erb"
 end
+
+execute 'bundle install' do
+  cwd '/vagrant/swerve'
+end
+
+ssh_known_hosts_entry 'github.com'
