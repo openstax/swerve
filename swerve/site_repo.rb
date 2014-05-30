@@ -7,24 +7,36 @@ class SiteRepo
     @github_path = github_path
   end
 
-  def installed?
+  def cloned?
     File.directory?(clone_dir) && !(Dir.entries(clone_dir) - %w{ . .. }).empty?
   end
 
-  def install!
-    Swerve.log_part("Cloning #{@github_path}...")
-    begin
-      g = Git.clone(git_ssh_url, @github_path, path: @clone_parent_dir)
-      Swerve.log(" via SSH")
-    rescue Git::GitExecuteError => e
-      g = Git.clone(git_https_url, @github_path, path: @clone_parent_dir)
-      Swerve.log(" via HTTPS")
+  def download
+    Swerve.log_part("Downloading #{@github_path}... ")    
+
+    if !cloned?
+      # When git cloning, try the ssh way first (will work if user 
+      # ssh keys setup for accessing git).  If that doesn't work, catch
+      # Git::GitExecuteError and try read-only https way next.
+
+      Swerve.log_part("Cloning... ")
+      begin
+        g = Git.clone(git_ssh_url, @github_path, path: @clone_parent_dir)
+        Swerve.log("(completed via SSH)")
+      rescue Git::GitExecuteError => e
+        g = Git.clone(git_https_url, @github_path, path: @clone_parent_dir)
+        Swerve.log("(completed via HTTPS)")
+      end
+    else
+      Swerve.log_part("Already cloned; fetching... ")
+      git_object.fetch
+      Swerve.log("(completed)")
     end
   end
 
-  def refresh
-    install! if !installed?
-  end
+  # def refresh
+  #   install! if !downloaded?
+  # end
 
   def clone_dir
     "#{@clone_parent_dir}/#{@github_path}"
@@ -39,7 +51,11 @@ class SiteRepo
   end
 
   def current_branch
-    Git.open(clone_dir).branches.local.select{|b| b.current}.first
+    git_object.branches.local.select{|b| b.current}.first
+  end
+
+  def git_object
+    Git.open(clone_dir)
   end
 
 end
