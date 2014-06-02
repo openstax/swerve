@@ -7,6 +7,7 @@ require 'git'
 require './utilities'
 require './network'
 require './runner'
+require './ui'
 require './site'
 require './site_repo'
 
@@ -14,6 +15,7 @@ require './site_repo'
 class Swerve < Thor
 
   include CommandLineReporter
+  include Ui
 
   # Make the help list the program as 'swerve', not 'swerve.rb'
   $PROGRAM_NAME = "swerve"
@@ -129,7 +131,9 @@ class Swerve < Thor
 
   desc "delete", "Deletes installed sites"
   def delete(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to delete?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to delete?",
+                   inputs: site_labels)
 
     if yes?("Are you sure you want to delete all repositories for these sites?: #{sites.collect{|site| site.name}.join(', ')}")
       sites.each {|site| site.delete }
@@ -148,7 +152,9 @@ class Swerve < Thor
 
   LONGDESC
   def download(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to download?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to download?",
+                   inputs: site_labels)
     sites.each {|site| site.download }
   end
 
@@ -161,7 +167,9 @@ class Swerve < Thor
 
   LONGDESC
   def init(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to reset?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to initialize?",
+                   inputs: site_labels)
 
     if yes?("Are you sure you want to init the active repositories for these sites?: #{sites.collect{|site| site.name}.join(', ')}")
       sites.each {|site| site.init }
@@ -172,7 +180,9 @@ class Swerve < Thor
 
   desc "update [<SITELABEL>...]", "Runs site-specific update actions for the specified sites' active repositories."
   def update(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to update?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to update?",
+                   inputs: site_labels)
     sites.each {|site| site.update(true) }
   end
 
@@ -185,7 +195,9 @@ class Swerve < Thor
 
   LONGDESC
   def start(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to start?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to start?",
+                   inputs: site_labels)
     sites.each {|site| site.start }
   end
 
@@ -197,7 +209,9 @@ class Swerve < Thor
 
   LONGDESC
   def stop(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to stop?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to stop?",
+                   inputs: site_labels)
     sites.each {|site| site.stop }
   end
 
@@ -209,74 +223,57 @@ class Swerve < Thor
 
   LONGDESC
   def restart(*site_labels)
-    sites = select_sites(site_labels, "Which site(s) do you want to restart?")
+    sites = select(site_select_choices,
+                   question: "Which site(s) do you want to restart?",
+                   inputs: site_labels)
     sites.each {|site| site.restart }
   end
 
   desc "repo [<SITELABEL>]", "Set the active repository for a site"
   def repo(*site_labels)
-    sites = select_sites(site_labels, "For which site do you want to select the active repository?", select_one: true)
+    sites = select(site_select_choices,
+                   question: "For which site do you want to select the active repository?",
+                   inputs: site_labels,
+                   select_one: true)
 
-    # TODO make select_sites into generic select_choice (that can be reused for selecting repos or branches)
+    site = sites.first
+
+    repos = select(site.repo_select_choices,
+                   question: "Which repository do you want to be active? ('#{site.active_repo.github_path}' is active now)",
+                   select_one: true,
+                   hide_all_choice: true)
+
+    site.set_active_repo(repos.first)
+
+    say "#{site.active_repo.github_path} is the active repository for #{site.name}."
   end
 
   desc "branch [SITELABEL]", "Set the active branch for a site's active repository"
-  def branch(site_label=nil)
-    puts Rainbow("TBD").red
-  end
+  def branch(*site_labels)
+    sites = select(site_select_choices,
+                   question: "For which site do you want to select the active branch?",
+                   inputs: site_labels,
+                   select_one: true)
 
+    site = sites.first
+    repo = site.active_repo
+
+    branches = select(repo.branch_select_choices,
+                      question: "Which branch do you want to be active? ('#{repo.current_branch.to_s}' is active now)",
+                      select_one: true,
+                      hide_all_choice: true)
+
+    branch = branches.first
+
+    repo.set_current_branch(branch)
+
+    say "#{branch.name} is the active branch for #{site.name}."
+  end
 
 protected
 
-
-  # Either uses the user input in site_labels to retrieve an array of Sites,
-  # or shows the user a list of Sites and asks them to select some (then returns
-  # those)
-  def select_sites(site_labels, question, options={})
-
-    options[:hide_choices] ||= false
-    options[:select_one] ||= false
-
-    selected_sites = []
-
-    if site_labels.empty?
-      choices = @@sites.collect{|site| [site.name, [site]]}
-      choices.push(['All', @@sites])
-
-      if !options[:hide_choices]
-        table :border => false do
-          choices.each_with_index do |choice, index|
-            row do
-              column "(#{index})", align: 'right', width: 4
-              column choice[0], width: 40
-            end
-          end
-        end
-      end
-
-      selected_indices = ask(question).split(" ")
-
-      if selected_indices.length != 1 && options[:select_one]
-        say Rainbow("Please choose only one site! (or CTRL + C to exit)").red
-        options[:hide_choices] = true
-        selected_sites = select_sites(site_labels, question, options)
-      elsif selected_indices.any? {|si| !si.is_i?}
-        say Rainbow("Please enter a number or numbers separated by spaces! (or CTRL + C to exit)").red
-        options[:hide_choices] = true
-        selected_sites = select_sites(site_labels, question, options)
-      else
-        selected_sites = selected_indices.collect{|si| choices[si.to_i][1]}.flatten
-      end
-    else
-      if site_labels.any?{|site_label| site_label =~ /all/i}
-        selected_sites = @@sites 
-      else
-        selected_sites = @@sites.select{|site| site_labels.any?{|site_label| site_label.downcase.starts_with?(site.unique_label.downcase)}}
-      end
-    end
-
-    say Rainbow("The input '#{site_labels.join(' ')}' did not match any sites.").red if selected_sites.empty?
-    return selected_sites
+  def site_select_choices
+    @@sites.collect{|site| {display: site.name, shortcut: site.unique_label, value: site}}
   end
 
   def get_site(site_name)
@@ -294,4 +291,12 @@ protected
 
 end
 
-Swerve.start(ARGV)
+###############################################################################
+# Run it!
+###############################################################################
+
+begin
+  Swerve.start(ARGV)
+rescue SystemExit, Interrupt
+  puts "\nExited swerve."
+end

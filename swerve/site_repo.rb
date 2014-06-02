@@ -54,6 +54,18 @@ class SiteRepo
     git_object.branches.local.select{|b| b.current}.first
   end
 
+  def branch_select_choices
+    choices = git_object.branches.collect do |branch| 
+      {display: branch.name, value: branch}
+    end
+
+    choices.reject{|choice| choice[:display] =~ / -> /}
+  end
+
+  def set_current_branch(branch)
+    git_object.checkout(branch.name)
+  end 
+
   def git_object
     Git.open(clone_dir)
   end

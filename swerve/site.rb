@@ -178,4 +178,10 @@ class Site
     Network.is_port_open?('localhost', port)
   end
 
+  def repo_select_choices
+    choices = []
+    @repos.each_value{|repo| choices.push(display: "#{repo.github_path}#{' (origin)' if repo.github_path == origin_github_path}", shortcut: nil, value: repo)}
+    choices
+  end
+
 end
