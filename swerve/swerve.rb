@@ -105,6 +105,85 @@ class Swerve < Thor
 
   @@sites = CONFIG[:sites].collect{|site_config| Site.new(site_config)}
 
+  desc "tutorial", "Read this to get started with swerve"
+  def tutorial
+say <<-TUTORIAL
+
+The 'swerve' program lets you easily download and run the sites in the
+OpenStax family.
+
+To get started, you first need to download the sites.
+
+#{prompt('swerve download')}
+
+This will prompt you with a list of the sites, letting you choose which you want
+to download.  Choose the one called #{@@sites[0].name}.  See the "Shortcut" column?  
+Most of the commands in swerve let you specify shortcuts for sites on the command 
+line.  For example you could have said
+
+#{prompt('swerve download ' + @@sites[0].unique_label)}
+
+to have just downloaded the #{@@sites[0].name} site without being prompted to choose.
+
+  ----------------------
+  Aside: For whichever sites are chosen for downloading, all of the code repositories
+  for that site will be downloaded.  There is one main repository for each site 
+  (called the "origin") and then each developer has their own copy of the code.  By 
+  default, the "origin" repository is the active repository for each site.  Any 
+  site-specific actions you take (like starting the web server) run on that site's 
+  active repository.  Sometimes, you'll want to look at code in a different repository, 
+  and possibly even on a different branch.  To do this, use the #{tut('swerve repo')} and 
+  #{tut('swerve branch')} commands.
+  ----------------------
+
+After you have downloaded the #{@@sites[0].name} site, take a moment to look at swerve's
+status:
+
+#{prompt('swerve status')}
+
+This will print a table showing the status of the sites available in swerve.  Along with
+the name of the site, the table shows the active repository, the active branch, and the port
+of the site's server if it is online (saying '(offline)' if it is offline).  Downloaded
+sites show up in green, non-downloaded ones in red.
+
+Before a particular site can be run, it must be initialized.  To do that for the one we 
+downloaded:
+
+#{prompt('swerve init ' + @@sites[0].unique_label)}
+
+You'll likely only want to initialize every so often.  Initialization does things like
+deleting and resetting your sites' development databases.  Then to start the server:
+
+#{prompt('swerve start ' + @@sites[0].unique_label)}
+
+In the status table, you'll now see two ports listed for #{@@sites[0].name}.  The first is
+the port used inside the swerve virtual machine.  The second is the port that is available
+outside of the virtual machine.  Say this second port was 30000.  Then on your computer you
+could point a browser to #{tut("http://localhost:30000")} and voila you'd see the site for
+#{@@sites[0].name}.
+
+To stop or restart the server, use the following, respectively:
+
+#{prompt('swerve stop')}
+#{prompt('swerve restart')}
+
+If someone has developed some new code and you want to make it available to your installation
+of swerve, you can do
+
+#{prompt('swerve update')}
+
+At any time you can say:
+
+#{prompt('swerve help')}
+
+to get a summary of the available commands.  Passing a command to #{tut('swerve help')} will
+give you detailed help on that command, e.g.:
+
+#{prompt('swerve help start')}
+
+TUTORIAL
+  end
+
   desc "status", "Lists the status of the sites"
   def status
 
@@ -112,7 +191,7 @@ class Swerve < Thor
       row :header => true, :color => 'blue'  do
         column 'Site', :width => 20, :align => 'left'
         column 'Active Repo', width: 20, align: 'left'
-        column 'Current Branch', width: 20, align: 'left'
+        column 'Active Branch', width: 20, align: 'left'
         column 'Port (Swerve => Host)', :width => 21
       end
 
@@ -130,6 +209,19 @@ class Swerve < Thor
   end
 
   desc "delete", "Deletes installed sites"
+  long_desc <<-LONGDESC
+    Deletes the specified sites.  If you don't have any unpushed work in the sites,
+    deleting them is no biggie -- you can just redownload them.  
+
+    Note that when you destroy the Swerve virtual machine (via "vagrant destroy") the
+    sites in swerve are not deleted.  This is because they are actually stored in the
+    "swerve" directory you checked out from Github.  So if you want to delete them,
+    you have to either call this "swerve delete" command or you have to manually delete
+    them from the "swerve" directory on your machine.
+
+    #{site_labels_help('install')}
+
+  LONGDESC
   def delete(*site_labels)
     sites = select(site_select_choices,
                    question: "Which site(s) do you want to delete?",
@@ -230,6 +322,13 @@ class Swerve < Thor
   end
 
   desc "repo [<SITELABEL>]", "Set the active repository for a site"
+  long_desc <<-LONGDESC
+    Sets the active repository for a site.  The user is first asked which site they
+    are interested in changing, then the repository to make active.
+
+    #{site_labels_help('repo')}
+
+  LONGDESC
   def repo(*site_labels)
     sites = select(site_select_choices,
                    question: "For which site do you want to select the active repository?",
@@ -249,6 +348,13 @@ class Swerve < Thor
   end
 
   desc "branch [SITELABEL]", "Set the active branch for a site's active repository"
+  long_desc <<-LONGDESC
+    Sets the active branch for a site.  The user is first prompted for which site
+    they are interested in, then the branch to change to.
+
+    #{site_labels_help('branch')}
+
+  LONGDESC
   def branch(*site_labels)
     sites = select(site_select_choices,
                    question: "For which site do you want to select the active branch?",
@@ -287,6 +393,14 @@ protected
   def self.log_part(message)
     $stdout.sync = true
     print message if !message.nil?
+  end
+
+  def tut(message)
+    Rainbow(message).bright.blue
+  end
+
+  def prompt(message)
+    "  #{tut('> ' + message)}"
   end
 
 end
