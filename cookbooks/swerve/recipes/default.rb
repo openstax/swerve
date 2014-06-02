@@ -46,6 +46,10 @@ template "/home/vagrant/.bashrc" do
   source "bashrc.erb"
 end
 
+template "/home/vagrant/.gitconfig" do
+  source "gitconfig.erb"
+end
+
 execute 'bundle install' do
   cwd '/vagrant/swerve'
 end

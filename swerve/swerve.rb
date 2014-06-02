@@ -105,7 +105,7 @@ class Swerve < Thor
 
   @@sites = CONFIG[:sites].collect{|site_config| Site.new(site_config)}
 
-  desc "tutorial", "Read this to get started with swerve"
+  desc "tutorial", Rainbow("Run this to get read how to get started with swerve").green.bright
   def tutorial
 say <<-TUTORIAL
 
@@ -208,7 +208,7 @@ TUTORIAL
     end
   end
 
-  desc "delete", "Deletes installed sites"
+  desc "delete [<SITELABEL>...]", "Deletes the specified sites"
   long_desc <<-LONGDESC
     Deletes the specified sites.  If you don't have any unpushed work in the sites,
     deleting them is no biggie -- you can just redownload them.  
