@@ -61,7 +61,7 @@ module Ui
         end
       end
       
-      return selections
+      return selections.flatten
     end
   end
 
