@@ -201,7 +201,7 @@ TUTORIAL
           column site.name
           column repo ? repo.github_path : '---'
           column repo ? repo.current_branch.to_s : '---'
-          column site.up? ? "#{site.port} => #{site.port * 10}" : '(offline)'
+          column site.up? ? "#{site.port} => #{site.port}" : '(offline)'
         end
       end
 
@@ -376,6 +376,21 @@ TUTORIAL
     say "#{branch.name} is the active branch for #{site.name}."
   end
 
+  desc "dir [SITELABEL]", "Get the active repository's local directory for the given site"
+  long_desc <<-LONGDESC
+    Get the active repository's local directory for the given site.  Useful for easily 
+    changing into a site's directory with:
+
+    #{Display.prompt('cd `swerve dir ost`')}
+  LONGDESC
+  def dir(*site_labels)
+    sites = select(site_select_choices,
+                   question: "For which site do set the current directory?",
+                   inputs: site_labels,
+                   select_one: true)
+    say sites.first.dir
+  end
+
 protected
 
   def site_select_choices
@@ -396,11 +411,11 @@ protected
   end
 
   def tut(message)
-    Rainbow(message).bright.blue
+    Display.tut(message)
   end
 
   def prompt(message)
-    "  #{tut('> ' + message)}"
+    Display.prompt(message)
   end
 
 end

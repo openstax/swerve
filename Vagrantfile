@@ -37,6 +37,15 @@ Vagrant.configure("2") do |config|
   config.vm.box = "precise64"
   config.vm.box_url = "http://files.vagrantup.com/precise64.box"
 
+  # Use NFS for shared folders for better performance
+  # Required for NFS to work, pick any local IP
+  config.vm.network :private_network, ip: '192.168.50.50'
+  config.vm.synced_folder '.', '/vagrant', nfs: true
+
+  # Alternative sync strategy
+  #
+  # config.vm.synced_folder ".", "/vagrant", type: "rsync"
+
   config.vm.provider :virtualbox do |vb|
     vb.customize ["modifyvm", :id, "--memory", "1024"]
     vb.customize ["modifyvm", :id, "--natdnshostresolver1", "on"]
@@ -47,11 +56,11 @@ Vagrant.configure("2") do |config|
   config.ssh.forward_agent = true
 
   guest_to_host_ports = {
-    2999 => 29990,
-    3000 => 30000,
-    3001 => 30010,
-    3002 => 30020,
-    3003 => 30030
+    2999 => 2999,
+    3000 => 3000,
+    3001 => 3001,
+    3002 => 3002,
+    3003 => 3003
   }
 
   guest_to_host_ports.each do |guest, host|

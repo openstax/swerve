@@ -36,3 +36,15 @@ class NilClass
     true
   end
 end
+
+class Display
+
+  def self.tut(message)
+    Rainbow(message).bright.blue
+  end
+
+  def self.prompt(message)
+    "  #{tut('> ' + message)}"
+  end
+
+end
