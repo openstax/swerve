@@ -14,9 +14,13 @@ module Runner
       cd #{cwd}; 
       eval "$(rbenv init -)"; 
       rbenv shell --unset;
-      if [ -e "#{cwd}/.ruby-version" ]; then rbenv shell "$(<\"#{cwd}/.ruby-version\")"; fi
+      test -e #{cwd}/.ruby-version && rbenv shell `cat #{cwd}/.ruby-version`;
       #{cmd}
     FULL_COMMAND
+
+    if options[:verbose]
+      puts "Full command:\n #{full_command}"
+    end
 
     if options[:fork]
       Swerve.log_part("Running '#{cmd}' in a separate process... ")

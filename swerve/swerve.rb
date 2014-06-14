@@ -58,8 +58,8 @@ class Swerve < Thor
             "bundle exec rake db:seed"
           ],
           update: [
-            "bundle",
-            "bundle exec rake db:migrate"
+            "rbenv exec bundle",
+            "rbenv exec bundle exec rake db:migrate"
           ],
           start: [
             "bundle exec rails server"
