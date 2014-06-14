@@ -7,10 +7,14 @@ module Runner
 
   def self.run(cwd, cmd, options)
     options[:fork] ||= false
-    options[:verbose] ||= false
+    options[:verbose] ||= true
+
+    # A number of machinations here to get our application commands to run in the right
+    # ruby environment.  Normally rbenv would help us out here, but since we are running
+    # swerve from a dir with its own .ruby-version, things get a little confused.
 
     full_command = <<-FULL_COMMAND
-      export PATH="/opt/rbenv/bin:$PATH"; 
+      export PATH="/opt/rbenv/bin:/opt/rbenv/shims:$PATH"; 
       cd #{cwd}; 
       eval "$(rbenv init -)"; 
       rbenv shell --unset;
