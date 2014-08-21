@@ -28,8 +28,8 @@ class SiteRepo
         Swerve.log("(completed via HTTPS)")
       end
     else
-      Swerve.log_part("Already cloned; fetching... ")
-      git_object.fetch
+      Swerve.log_part("Already cloned; pulling... ")
+      git_object.pull
       Swerve.log("(completed)")
     end
   end
