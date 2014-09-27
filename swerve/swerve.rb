@@ -98,6 +98,15 @@ class Swerve < Thor
           forks: []
         },
         port: 3003
+      },
+      {
+        name: "Tutor",
+        unique_label: "tutor",
+        git: {
+          origin: "openstax/tutor",
+          forks: []
+        },
+        port: 3001
       }
 
     ]

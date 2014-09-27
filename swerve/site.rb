@@ -60,7 +60,7 @@ class Site
     end
 
     if up?
-      Swerve.log("#{name} startup is complete, its server is active on guest port #{port}, host port #{port*10}")
+      Swerve.log("#{name} startup is complete, its server is active on guest port #{port}, host port #{port}")
     else
       Swerve.log("#{name}'s server didn't startup within #{time_limit} seconds.  If it is slow, it might still come up.  Check 'swerve status'.")
     end
