@@ -54,6 +54,7 @@ class Swerve < Thor
           init: [
             "bundle install --without production",
             "bundle exec rake db:drop",
+            "bundle exec rake db:create",
             "bundle exec rake db:migrate",
             "bundle exec rake db:seed"
           ],
@@ -106,9 +107,24 @@ class Swerve < Thor
           origin: "openstax/tutor",
           forks: []
         },
-        port: 3001
+        port: 3001,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:create",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server"
+          ]
+        }
       }
-
     ]
   }
 
