@@ -1,17 +1,12 @@
-rbenv_ruby "1.9.3-p194"
-rbenv_ruby "1.9.3-p545"
-rbenv_ruby "2.1.2"
+rbenv_ruby "1.9.3-p547"
+rbenv_ruby "2.1.3"
 
 rbenv_gem "bundler" do
-  ruby_version "1.9.3-p194"
+  ruby_version "1.9.3-p547"
 end
 
 rbenv_gem "bundler" do
-  ruby_version "1.9.3-p545"
-end
-
-rbenv_gem "bundler" do
-  ruby_version "2.1.2"
+  ruby_version "2.1.3"
 end
 
 include_recipe "emacs"
