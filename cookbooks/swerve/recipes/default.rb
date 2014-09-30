@@ -1,12 +1,12 @@
-rbenv_ruby "1.9.3-p194"
-rbenv_ruby "1.9.3-p545"
+rbenv_ruby "1.9.3-p547"
+rbenv_ruby "2.1.3"
 
 rbenv_gem "bundler" do
-  ruby_version "1.9.3-p194"
+  ruby_version "1.9.3-p547"
 end
 
 rbenv_gem "bundler" do
-  ruby_version "1.9.3-p545"
+  ruby_version "2.1.3"
 end
 
 include_recipe "emacs"
@@ -33,8 +33,9 @@ template "/usr/bin/swerve" do
   mode 0755
 end
 
-remote_file "/usr/bin/prompt.pl" do
-  source "https://raw.githubusercontent.com/kevinburleigh75/ost_bash_prompt/master/prompt.pl"
+# From https://raw.githubusercontent.com/kevinburleigh75/ost_bash_prompt/master/prompt.pl
+template "/usr/bin/prompt.pl" do
+  source "prompt.pl"
   mode 0755
 end
 

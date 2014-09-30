@@ -76,7 +76,23 @@ class Swerve < Thor
             "jpslav/exercises"
           ]
         },
-        port: 3002
+        port: 3002,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed",
+            "bundle exec rails generate secrets"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server -b 0.0.0.0 -p 3002"
+          ]
+        }
       },
       {
         name: "Accounts",
@@ -88,7 +104,22 @@ class Swerve < Thor
             "jpslav/accounts"
           ]
         },
-        port: 2999
+        port: 2999,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server"
+          ]
+        }
       },
       {
         name: "Exchange",
@@ -97,9 +128,48 @@ class Swerve < Thor
           origin: "openstax/exchange",
           forks: []
         },
-        port: 3003
+        port: 3003,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server"
+          ]
+        }
+      },
+      {
+        name: "Tutor",
+        unique_label: "tutor",
+        git: {
+          origin: "openstax/tutor",
+          forks: []
+        },
+        port: 3001,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed",
+            "bundle exec rails generate secrets"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server -b 0.0.0.0"
+          ]
+        }
       }
-
     ]
   }
 
