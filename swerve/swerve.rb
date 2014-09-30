@@ -54,7 +54,6 @@ class Swerve < Thor
           init: [
             "bundle install --without production",
             "bundle exec rake db:drop",
-            "bundle exec rake db:create",
             "bundle exec rake db:migrate",
             "bundle exec rake db:seed"
           ],
@@ -82,7 +81,6 @@ class Swerve < Thor
           init: [
             "bundle install --without production",
             "bundle exec rake db:drop",
-            "bundle exec rake db:create",
             "bundle exec rake db:migrate",
             "bundle exec rake db:seed",
             "bundle exec rails generate secrets"
@@ -111,7 +109,6 @@ class Swerve < Thor
           init: [
             "bundle install --without production",
             "bundle exec rake db:drop",
-            "bundle exec rake db:create",
             "bundle exec rake db:migrate",
             "bundle exec rake db:seed"
           ],
@@ -136,7 +133,6 @@ class Swerve < Thor
           init: [
             "bundle install --without production",
             "bundle exec rake db:drop",
-            "bundle exec rake db:create",
             "bundle exec rake db:migrate",
             "bundle exec rake db:seed"
           ],
@@ -161,7 +157,6 @@ class Swerve < Thor
           init: [
             "bundle install --without production",
             "bundle exec rake db:drop",
-            "bundle exec rake db:create",
             "bundle exec rake db:migrate",
             "bundle exec rake db:seed",
             "bundle exec rails generate secrets"
