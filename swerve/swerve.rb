@@ -63,7 +63,7 @@ class Swerve < Thor
             "bundle exec rake db:migrate"
           ],
           start: [
-            "bundle exec rails server -b 0.0.0.0"
+            "bundle exec rails server"
           ]
         }
       },
@@ -84,7 +84,8 @@ class Swerve < Thor
             "bundle exec rake db:drop",
             "bundle exec rake db:create",
             "bundle exec rake db:migrate",
-            "bundle exec rake db:seed"
+            "bundle exec rake db:seed",
+            "bundle exec rails generate secrets"
           ],
           update: [
             "bundle",
@@ -119,7 +120,7 @@ class Swerve < Thor
             "bundle exec rake db:migrate"
           ],
           start: [
-            "bundle exec rails server -b 0.0.0.0"
+            "bundle exec rails server"
           ]
         }
       },
@@ -144,7 +145,7 @@ class Swerve < Thor
             "bundle exec rake db:migrate"
           ],
           start: [
-            "bundle exec rails server -b 0.0.0.0"
+            "bundle exec rails server"
           ]
         }
       },
@@ -162,7 +163,8 @@ class Swerve < Thor
             "bundle exec rake db:drop",
             "bundle exec rake db:create",
             "bundle exec rake db:migrate",
-            "bundle exec rake db:seed"
+            "bundle exec rake db:seed",
+            "bundle exec rails generate secrets"
           ],
           update: [
             "bundle",
