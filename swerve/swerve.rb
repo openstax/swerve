@@ -92,7 +92,7 @@ class Swerve < Thor
             "bundle exec rake db:migrate"
           ],
           start: [
-            "bundle exec rails server -b 0.0.0.0"
+            "bundle exec rails server -b 0.0.0.0 -p 3002"
           ]
         }
       },
