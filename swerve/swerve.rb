@@ -63,7 +63,7 @@ class Swerve < Thor
             "bundle exec rake db:migrate"
           ],
           start: [
-            "bundle exec rails server"
+            "bundle exec rails server -b 0.0.0.0"
           ]
         }
       },
@@ -77,7 +77,23 @@ class Swerve < Thor
             "jpslav/exercises"
           ]
         },
-        port: 3002
+        port: 3002,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:create",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server -b 0.0.0.0"
+          ]
+        }
       },
       {
         name: "Accounts",
@@ -89,7 +105,23 @@ class Swerve < Thor
             "jpslav/accounts"
           ]
         },
-        port: 2999
+        port: 2999,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:create",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server -b 0.0.0.0"
+          ]
+        }
       },
       {
         name: "Exchange",
@@ -98,7 +130,23 @@ class Swerve < Thor
           origin: "openstax/exchange",
           forks: []
         },
-        port: 3003
+        port: 3003,
+        commands: {
+          init: [
+            "bundle install --without production",
+            "bundle exec rake db:drop",
+            "bundle exec rake db:create",
+            "bundle exec rake db:migrate",
+            "bundle exec rake db:seed"
+          ],
+          update: [
+            "bundle",
+            "bundle exec rake db:migrate"
+          ],
+          start: [
+            "bundle exec rails server -b 0.0.0.0"
+          ]
+        }
       },
       {
         name: "Tutor",
@@ -121,7 +169,7 @@ class Swerve < Thor
             "bundle exec rake db:migrate"
           ],
           start: [
-            "bundle exec rails server"
+            "bundle exec rails server -b 0.0.0.0"
           ]
         }
       }

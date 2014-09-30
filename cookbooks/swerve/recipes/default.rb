@@ -33,8 +33,9 @@ template "/usr/bin/swerve" do
   mode 0755
 end
 
-remote_file "/usr/bin/prompt.pl" do
-  source "https://raw.githubusercontent.com/kevinburleigh75/ost_bash_prompt/master/prompt.pl"
+# From https://raw.githubusercontent.com/kevinburleigh75/ost_bash_prompt/master/prompt.pl
+template "/usr/bin/prompt.pl" do
+  source "prompt.pl"
   mode 0755
 end
 
