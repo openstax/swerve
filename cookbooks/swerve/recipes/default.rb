@@ -16,7 +16,7 @@ required_packages = [
   "sqlite3", 
   "libsqlite3-dev",
   # To use passwords in user_account blocks
-  "libshadow-ruby1.8",
+  # "libshadow-ruby1.8",   # removed when updated to Trusty
   "libxml2",
   "libxml2-dev",
   "libxslt1-dev"

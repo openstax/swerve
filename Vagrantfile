@@ -34,8 +34,8 @@ end
 #
 
 Vagrant.configure("2") do |config|
-  config.vm.box = "precise64"
-  config.vm.box_url = "http://files.vagrantup.com/precise64.box"
+  config.vm.box = "trusty64"
+  config.vm.box_url = "https://vagrantcloud.com/ubuntu/boxes/trusty64/versions/1/providers/virtualbox.box"
 
   # Use NFS for shared folders for better performance
   # Required for NFS to work, pick any local IP
